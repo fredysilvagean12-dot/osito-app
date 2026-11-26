@@ -14,6 +14,9 @@ if not GEMINI_API_KEY:
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
+PRIMARY_MODEL = "gemini-3.5-flash-lite"
+FALLBACK_MODEL = "gemini-3.1-flash-lite"
+
 SYSTEM_INSTRUCTION = """Eres Pelucho, mi mejor amigo peluche de toda la vida. 🧸
 
 Eres:
@@ -65,15 +68,26 @@ def chat():
             parts=[types.Part(text=user_message)]
         ))
 
-        response = client.models.generate_content(
-            model="gemini-3.8-flash",
-            contents=contents,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_INSTRUCTION,
-                temperature=0.9,
-                max_output_tokens=300, thinking_config=types.ThinkingConfig(thinking_budget=0),
-            )
+        config = types.GenerateContentConfig(
+            system_instruction=SYSTEM_INSTRUCTION,
+            temperature=0.9,
+            max_output_tokens=300,
         )
+
+        # Intento con modelo principal y respaldo ante saturación / error 503
+        try:
+            response = client.models.generate_content(
+                model=PRIMARY_MODEL,
+                contents=contents,
+                config=config,
+            )
+        except Exception as primary_err:
+            print(f"Aviso: Falló el modelo principal ({PRIMARY_MODEL}): {primary_err}. Intentando con respaldo ({FALLBACK_MODEL})...")
+            response = client.models.generate_content(
+                model=FALLBACK_MODEL,
+                contents=contents,
+                config=config,
+            )
 
         reply = response.text.strip()
         return jsonify({"reply": reply})
