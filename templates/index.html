@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>🧸 Pelucho — Tu amigo peluche</title>
+  <style>
+    /* ══════════════════════════════════════════
+       RESET & VARIABLES
+    ══════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:    #FFF8F0;
+      --warm1:    #FFE4C4;
+      --warm2:    #FFDAB9;
+      --accent:   #FF8C69;
+      --accent2:  #FF6B8A;
+      --bear:     #C68642;
+      --bear-dk:  #A0522D;
+      --bear-lt:  #DEB887;
+      --blush:    #FF9999;
+      --text:     #5D3A1A;
+      --white:    #FFFFFF;
+      --shadow:   rgba(166, 100, 50, 0.25);
+    }
+
+    /* ══════════════════════════════════════════
+       FONDO Y LAYOUT PRINCIPAL
+    ══════════════════════════════════════════ */
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      background: linear-gradient(160deg, #FFF0E6 0%, #FFE4C4 40%, #FFDAB9 70%, #FFD4B2 100%);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: var(--text);
+      overflow-x: hidden;
+      padding-bottom: 24px;
+    }
+
+    /* Estrellas decorativas de fondo */
+    body::before {
+      content: '✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦';
+      position: fixed;
+      top: 12px;
+      left: 0; right: 0;
+      text-align: center;
+      font-size: 18px;
+      color: rgba(255,140,105,0.35);
+      letter-spacing: 8px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ══════════════════════════════════════════
+       ENCABEZADO
+    ══════════════════════════════════════════ */
+    header {
+      text-align: center;
+      padding: 28px 20px 8px;
+      z-index: 1;
+    }
+    header h1 {
+      font-size: clamp(1.6rem, 5vw, 2.2rem);
+      font-weight: 800;
+      color: var(--accent);
+      text-shadow: 0 2px 8px rgba(255,140,105,0.3);
+      letter-spacing: 1px;
+    }
+    header p {
+      font-size: 0.95rem;
+      color: #A0522D;
+      margin-top: 4px;
+      opacity: 0.85;
+    }
+
+    /* ══════════════════════════════════════════
+       TARJETA PRINCIPAL
+    ══════════════════════════════════════════ */
+    .card {
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(12px);
+      border-radius: 32px;
+      box-shadow: 0 12px 48px var(--shadow), 0 2px 8px rgba(255,255,255,0.8) inset;
+      border: 2px solid rgba(255,220,180,0.6);
+      width: min(92vw, 460px);
+      padding: 24px 20px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      z-index: 1;
+      margin-top: 10px;
+    }
+
+    /* ══════════════════════════════════════════
+       SVG OSO — ANIMACIONES
+    ══════════════════════════════════════════ */
+    #bear-container {
+      position: relative;
+      width: 220px;
+      height: 240px;
+      filter: drop-shadow(0 10px 24px rgba(166,100,50,0.3));
+    }
+
+    /* Flotar suavemente */
+    #bear-svg {
+      animation: bearFloat 4s ease-in-out infinite;
+      transform-origin: bottom center;
+    }
+    @keyframes bearFloat {
+      0%,100% { transform: translateY(0px) rotate(-0.5deg); }
+      50%      { transform: translateY(-8px) rotate(0.5deg); }
+    }
+
+    /* Párpados parpadeando */
+    .eyelid-left, .eyelid-right {
+      animation: blink 5s ease-in-out infinite;
+      transform-origin: center top;
+    }
+    .eyelid-right { animation-delay: 0.05s; }
+    @keyframes blink {
+      0%,90%,100% { transform: scaleY(0);   opacity: 0; }
+      93%,97%     { transform: scaleY(1);   opacity: 1; }
+    }
+
+    /* Boca hablando */
+    .mouth-talking {
+      transition: d 0.1s ease;
+    }
+    @keyframes talkAnim {
+      0%,100% { transform: scaleY(1);   }
+      25%     { transform: scaleY(1.6); }
+      50%     { transform: scaleY(0.6); }
+      75%     { transform: scaleY(1.4); }
+    }
+    #mouth-group.talking {
+      animation: talkAnim 0.35s ease-in-out infinite;
+      transform-origin: center 183px;
+    }
+
+    /* Mejillas latiendo */
+    .cheek {
+      animation: cheekPulse 3s ease-in-out infinite;
+    }
+    .cheek-right { animation-delay: 0.5s; }
+    @keyframes cheekPulse {
+      0%,100% { opacity: 0.65; transform: scale(1); }
+      50%     { opacity: 0.9;  transform: scale(1.07); }
+    }
+
+    /* ══════════════════════════════════════════
+       BURBUJA DE MENSAJE DEL OSO
+    ══════════════════════════════════════════ */
+    #bear-bubble {
+      background: linear-gradient(135deg, #FFF5EE, #FFE8D6);
+      border: 2px solid rgba(255,180,120,0.5);
+      border-radius: 20px 20px 20px 4px;
+      padding: 12px 16px;
+      font-size: 0.95rem;
+      line-height: 1.55;
+      color: var(--text);
+      width: 100%;
+      min-height: 52px;
+      box-shadow: 0 4px 16px rgba(200,120,60,0.1);
+      position: relative;
+      transition: opacity 0.3s ease;
+    }
+    #bear-bubble::before {
+      content: '🧸 ';
+      font-size: 1.1rem;
+    }
+    #bear-bubble.empty { opacity: 0.5; font-style: italic; color: #B08060; }
+
+    /* ══════════════════════════════════════════
+       HISTORIAL DE CHAT
+    ══════════════════════════════════════════ */
+    #chat-history {
+      width: 100%;
+      max-height: 180px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 4px;
+      scroll-behavior: smooth;
+    }
+    #chat-history::-webkit-scrollbar { width: 4px; }
+    #chat-history::-webkit-scrollbar-track { background: transparent; }
+    #chat-history::-webkit-scrollbar-thumb { background: rgba(200,130,80,0.4); border-radius: 4px; }
+
+    .msg {
+      max-width: 85%;
+      padding: 9px 14px;
+      border-radius: 18px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      word-break: break-word;
+      animation: msgIn 0.3s ease-out;
+    }
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .msg.user {
+      align-self: flex-end;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      border-radius: 18px 18px 4px 18px;
+    }
+    .msg.bear {
+      align-self: flex-start;
+      background: rgba(255,255,255,0.85);
+      border: 1.5px solid rgba(255,180,120,0.4);
+      color: var(--text);
+      border-radius: 4px 18px 18px 18px;
+    }
+
+    /* ══════════════════════════════════════════
+       SEPARADOR
+    ══════════════════════════════════════════ */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,160,100,0.3), transparent);
+    }
+
+    /* ══════════════════════════════════════════
+       ZONA DE ENTRADA
+    ══════════════════════════════════════════ */
+    #input-zone {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+
+    /* Botón micrófono */
+    #mic-btn {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 6px 24px rgba(255,110,138,0.4), 0 2px 6px rgba(0,0,0,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    #mic-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    #mic-btn:active::after { opacity: 1; }
+    #mic-btn:active { transform: scale(0.93); }
+
+    #mic-btn.listening {
+      background: linear-gradient(135deg, #FF4B6E, #FF1744);
+      box-shadow: 0 0 0 0 rgba(255,75,110,0.6);
+      animation: pulse-ring 1.2s ease-out infinite;
+    }
+    @keyframes pulse-ring {
+      0%   { box-shadow: 0 0 0 0 rgba(255,75,110,0.6); }
+      70%  { box-shadow: 0 0 0 20px rgba(255,75,110,0); }
+      100% { box-shadow: 0 0 0 0 rgba(255,75,110,0); }
+    }
+
+    #mic-label {
+      font-size: 0.8rem;
+      color: #A0522D;
+      margin-top: -4px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* Campo de texto */
+    .text-row {
+      display: flex;
+      width: 100%;
+      gap: 8px;
+    }
+    #user-input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid rgba(255,180,120,0.5);
+      border-radius: 24px;
+      font-size: 0.95rem;
+      background: rgba(255,255,255,0.8);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+    #user-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255,140,105,0.2);
+    }
+    #user-input::placeholder { color: #C4956A; }
+
+    #send-btn {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      font-size: 1.3rem;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 14px rgba(255,110,138,0.35);
+      transition: transform 0.15s ease;
+      flex-shrink: 0;
+    }
+    #send-btn:active { transform: scale(0.92); }
+    #send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Estado del reconocimiento */
+    #status-bar {
+      font-size: 0.78rem;
+      color: #B07040;
+      min-height: 18px;
+      text-align: center;
+      font-style: italic;
+    }
+
+    /* ══════════════════════════════════════════
+       SPINNER / LOADING
+    ══════════════════════════════════════════ */
+    .loading-dots span {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin: 0 2px;
+      animation: dot-bounce 1.2s ease-in-out infinite;
+    }
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dot-bounce {
+      0%,80%,100% { transform: scale(0.6); opacity: 0.4; }
+      40%          { transform: scale(1.1); opacity: 1; }
+    }
+
+    /* ══════════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════════ */
+    footer {
+      margin-top: 14px;
+      font-size: 0.72rem;
+      color: rgba(160,82,45,0.6);
+      text-align: center;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🧸 Pelucho</h1>
+    <p>Tu amigo peluche siempre está aquí para ti 💕</p>
+  </header>
+
+  <!-- TARJETA PRINCIPAL -->
+  <div class="card">
+
+    <!-- ══ OSO SVG ══ -->
+    <div id="bear-container">
+      <svg id="bear-svg" viewBox="0 0 220 240" xmlns="http://www.w3.org/2000/svg" width="220" height="240">
+        <!-- Sombra del cuerpo -->
+        <ellipse cx="110" cy="236" rx="52" ry="10" fill="rgba(166,100,50,0.18)"/>
+
+        <!-- CUERPO -->
+        <ellipse cx="110" cy="175" rx="58" ry="62" fill="#C68642"/>
+        <!-- Panza clara -->
+        <ellipse cx="110" cy="183" rx="34" ry="38" fill="#DEB887"/>
+        <!-- Contorno cuerpo -->
+        <ellipse cx="110" cy="175" rx="58" ry="62" fill="none" stroke="#A0522D" stroke-width="1.2" opacity="0.4"/>
+
+        <!-- PIERNAS -->
+        <ellipse cx="81"  cy="228" rx="22" ry="14" fill="#C68642"/>
+        <ellipse cx="139" cy="228" rx="22" ry="14" fill="#C68642"/>
+        <ellipse cx="81"  cy="228" rx="22" ry="14" fill="none" stroke="#A0522D" stroke-width="1" opacity="0.4"/>
+        <ellipse cx="139" cy="228" rx="22" ry="14" fill="none" stroke="#A0522D" stroke-width="1" opacity="0.4"/>
+        <!-- Almohadillas -->
+        <ellipse cx="81"  cy="232" rx="13" ry="7"  fill="#DEB887"/>
+        <ellipse cx="139" cy="232" rx="13" ry="7"  fill="#DEB887"/>
+
+        <!-- BRAZOS -->
+        <ellipse cx="58"  cy="178" rx="17" ry="26" fill="#C68642" transform="rotate(-18,58,178)"/>
+        <ellipse cx="162" cy="178" rx="17" ry="26" fill="#C68642" transform="rotate(18,162,178)"/>
+        <ellipse cx="58"  cy="178" rx="17" ry="26" fill="none" stroke="#A0522D" stroke-width="1" opacity="0.4" transform="rotate(-18,58,178)"/>
+        <ellipse cx="162" cy="178" rx="17" ry="26" fill="none" stroke="#A0522D" stroke-width="1" opacity="0.4" transform="rotate(18,162,178)"/>
+        <!-- Manos -->
+        <circle cx="50"  cy="196" r="13" fill="#C68642"/>
+        <circle cx="170" cy="196" r="13" fill="#C68642"/>
+        <circle cx="50"  cy="196" r="13" fill="none" stroke="#A0522D" stroke-width="1" opacity="0.35"/>
+        <circle cx="170" cy="196" r="13" fill="none" stroke="#A0522D" stroke-width="1" opacity="0.35"/>
+        <!-- Almohadillas manos -->
+        <circle cx="50"  cy="199" r="7"  fill="#DEB887"/>
+        <circle cx="170" cy="199" r="7"  fill="#DEB887"/>
+
+        <!-- CABEZA -->
+        <circle cx="110" cy="118" r="68" fill="#C68642"/>
+        <!-- Contorno cabeza -->
+        <circle cx="110" cy="118" r="68" fill="none" stroke="#A0522D" stroke-width="1.5" opacity="0.35"/>
+
+        <!-- OREJAS -->
+        <circle cx="56"  cy="62"  r="26" fill="#C68642"/>
+        <circle cx="164" cy="62"  r="26" fill="#C68642"/>
+        <!-- Interior orejas -->
+        <circle cx="56"  cy="62"  r="16" fill="#DEB887"/>
+        <circle cx="164" cy="62"  r="16" fill="#DEB887"/>
+        <!-- Centro orejas -->
+        <circle cx="56"  cy="62"  r="8"  fill="#C68642" opacity="0.5"/>
+        <circle cx="164" cy="62"  r="8"  fill="#C68642" opacity="0.5"/>
+
+        <!-- CARA INTERIOR (morro) -->
+        <ellipse cx="110" cy="135" rx="36" ry="30" fill="#DEB887"/>
+
+        <!-- MEJILLAS -->
+        <ellipse class="cheek cheek-left"  cx="78"  cy="130" rx="17" ry="10" fill="#FF9999" opacity="0.65"/>
+        <ellipse class="cheek cheek-right" cx="142" cy="130" rx="17" ry="10" fill="#FF9999" opacity="0.65"/>
+
+        <!-- OJOS — globo ocular -->
+        <circle cx="90"  cy="108" r="12" fill="white"/>
+        <circle cx="130" cy="108" r="12" fill="white"/>
+        <!-- Iris -->
+        <circle cx="91"  cy="109" r="8"  fill="#3B1A08"/>
+        <circle cx="131" cy="109" r="8"  fill="#3B1A08"/>
+        <!-- Pupila -->
+        <circle cx="92"  cy="110" r="4"  fill="#0D0603"/>
+        <circle cx="132" cy="110" r="4"  fill="#0D0603"/>
+        <!-- Brillo -->
+        <circle cx="94"  cy="106" r="2.5" fill="white" opacity="0.9"/>
+        <circle cx="134" cy="106" r="2.5" fill="white" opacity="0.9"/>
+        <!-- Brillo mini -->
+        <circle cx="88"  cy="112" r="1.2" fill="white" opacity="0.5"/>
+        <circle cx="128" cy="112" r="1.2" fill="white" opacity="0.5"/>
+
+        <!-- PÁRPADOS (parpadeando con CSS) -->
+        <rect class="eyelid-left"  x="78" y="96" width="24" height="24" rx="12" fill="#C68642"/>
+        <rect class="eyelid-right" x="118" y="96" width="24" height="24" rx="12" fill="#C68642"/>
+
+        <!-- NARIZ -->
+        <ellipse cx="110" cy="124" rx="10" ry="7" fill="#8B4513"/>
+        <!-- Brillo nariz -->
+        <ellipse cx="107" cy="122" rx="4"  ry="2.5" fill="rgba(255,255,255,0.4)"/>
+
+        <!-- BOCA -->
+        <g id="mouth-group">
+          <path id="mouth-path" d="M 94 138 Q 110 152 126 138" fill="none" stroke="#8B4513" stroke-width="2.8" stroke-linecap="round"/>
+          <!-- Hoyuelos -->
+          <circle cx="94"  cy="138" r="2.5" fill="#A0522D" opacity="0.5"/>
+          <circle cx="126" cy="138" r="2.5" fill="#A0522D" opacity="0.5"/>
+        </g>
+
+        <!-- BIGOTES decorativos -->
+        <line x1="58"  y1="130" x2="84"  y2="128" stroke="#A0522D" stroke-width="1.2" opacity="0.4" stroke-linecap="round"/>
+        <line x1="58"  y1="136" x2="84"  y2="136" stroke="#A0522D" stroke-width="1.2" opacity="0.4" stroke-linecap="round"/>
+        <line x1="136" y1="128" x2="162" y2="130" stroke="#A0522D" stroke-width="1.2" opacity="0.4" stroke-linecap="round"/>
+        <line x1="136" y1="136" x2="162" y2="136" stroke="#A0522D" stroke-width="1.2" opacity="0.4" stroke-linecap="round"/>
+
+        <!-- DETALLE TEXTURA pelo cabeza -->
+        <path d="M78 68 Q82 58 90 62" fill="none" stroke="#A0522D" stroke-width="1" opacity="0.25" stroke-linecap="round"/>
+        <path d="M130 62 Q138 58 142 68" fill="none" stroke="#A0522D" stroke-width="1" opacity="0.25" stroke-linecap="round"/>
+
+        <!-- LAZO decorativo -->
+        <g transform="translate(100, 150)">
+          <path d="M-12,-6 Q-6,-12 0,-6 Q6,-12 12,-6 Q6,0 0,-6 Q-6,0 -12,-6 Z" fill="#FF6B8A" opacity="0.85"/>
+          <circle cx="0" cy="-6" r="3" fill="#FF4B6E"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- BURBUJA DE RESPUESTA ACTUAL -->
+    <div id="bear-bubble" class="empty">
+      Hola amiguito, ¡dime lo que sientes hoy! ✨
+    </div>
+
+    <!-- HISTORIAL -->
+    <div id="chat-history"></div>
+
+    <div class="divider"></div>
+
+    <!-- ZONA DE ENTRADA -->
+    <div id="input-zone">
+      <button id="mic-btn" title="Mantén para hablar" aria-label="Micrófono">🎤</button>
+      <span id="mic-label">Toca para hablar</span>
+
+      <div class="text-row">
+        <input id="user-input" type="text" placeholder="O escribe aquí tu mensaje 💬" autocomplete="off" autocorrect="on" spellcheck="false"/>
+        <button id="send-btn" aria-label="Enviar">➤</button>
+      </div>
+
+      <div id="status-bar">Listo para escucharte 🌟</div>
+    </div>
+
+  </div>
+
+  <footer>✦ Hecho con mucho amor ✦ Pelucho v1.0 🧸</footer>
+
+  <!-- ══════════════════════════════════════════
+       JAVASCRIPT
+  ══════════════════════════════════════════ -->
+  <script>
+  (function () {
+    'use strict';
+
+    /* ── ELEMENTOS ── */
+    const micBtn       = document.getElementById('mic-btn');
+    const micLabel     = document.getElementById('mic-label');
+    const userInput    = document.getElementById('user-input');
+    const sendBtn      = document.getElementById('send-btn');
+    const statusBar    = document.getElementById('status-bar');
+    const bearBubble   = document.getElementById('bear-bubble');
+    const chatHistory  = document.getElementById('chat-history');
+    const mouthGroup   = document.getElementById('mouth-group');
+
+    /* ── ESTADO ── */
+    let conversationHistory = [];
+    let isSpeaking  = false;
+    let isListening = false;
+    let isLoading   = false;
+    let recognition = null;
+
+    /* ══════════════════════════════════════════
+       WEB SPEECH — SÍNTESIS (TTS)
+    ══════════════════════════════════════════ */
+    const synth = window.speechSynthesis;
+
+    function getSpanishVoice() {
+      const voices = synth.getVoices();
+      // Prioridad: es-MX femenino > es-ES femenino > cualquier español > primero disponible
+      const preferLangs = ['es-MX', 'es-ES', 'es-US', 'es-AR', 'es'];
+      for (const lang of preferLangs) {
+        const match = voices.find(v =>
+          v.lang.startsWith(lang) && v.name.toLowerCase().includes('female')
+        ) || voices.find(v => v.lang.startsWith(lang));
+        if (match) return match;
+      }
+      return voices[0] || null;
+    }
+
+    function speak(text) {
+      if (!synth) return;
+      synth.cancel();
+      const clean = text.replace(/[🧸💕✨🌟🤗😊🥰💖🌸🎉]/g, '').trim();
+      const utter = new SpeechSynthesisUtterance(clean);
+      utter.lang  = 'es-MX';
+      utter.rate  = 0.92;
+      utter.pitch = 1.25;
+      utter.volume = 1.0;
+
+      const voice = getSpanishVoice();
+      if (voice) utter.voice = voice;
+
+      utter.onstart = () => {
+        isSpeaking = true;
+        mouthGroup.classList.add('talking');
+      };
+      utter.onend = utter.onerror = () => {
+        isSpeaking = false;
+        mouthGroup.classList.remove('talking');
+      };
+
+      // Chrome Android a veces necesita un pequeño retraso
+      setTimeout(() => synth.speak(utter), 120);
+    }
+
+    // Cargar voces cuando estén disponibles
+    if (synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = () => {};
+    }
+
+    /* ══════════════════════════════════════════
+       WEB SPEECH — RECONOCIMIENTO (STT)
+    ══════════════════════════════════════════ */
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      micBtn.disabled = true;
+      micBtn.title = 'Tu navegador no soporta reconocimiento de voz';
+      micBtn.style.opacity = '0.4';
+      setStatus('⚠️ Usa Chrome para voz · Escribe tu mensaje');
+    } else {
+      recognition = new SpeechRecognition();
+      recognition.lang = 'es-MX';
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+      recognition.continuous = false;
+
+      recognition.onstart = () => {
+        isListening = true;
+        micBtn.classList.add('listening');
+        micBtn.textContent = '🛑';
+        micLabel.textContent = 'Escuchando... toca para parar';
+        setStatus('🎙️ Te estoy escuchando...');
+        userInput.placeholder = '...';
+      };
+
+      recognition.onresult = (e) => {
+        let interim = '', final = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) final += e.results[i][0].transcript;
+          else interim += e.results[i][0].transcript;
+        }
+        userInput.value = final || interim;
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        micBtn.classList.remove('listening');
+        micBtn.textContent = '🎤';
+        micLabel.textContent = 'Toca para hablar';
+        userInput.placeholder = 'O escribe aquí tu mensaje 💬';
+
+        const text = userInput.value.trim();
+        if (text) {
+          setStatus('💭 Pensando...');
+          sendMessage(text);
+        } else {
+          setStatus('No te escuché bien, intenta de nuevo 🌸');
+        }
+      };
+
+      recognition.onerror = (e) => {
+        isListening = false;
+        micBtn.classList.remove('listening');
+        micBtn.textContent = '🎤';
+        micLabel.textContent = 'Toca para hablar';
+        const msgs = {
+          'not-allowed':  '⚠️ Permite el micrófono en Chrome',
+          'no-speech':    'No te escuché, intenta de nuevo 🌸',
+          'network':      '⚠️ Error de red con el micrófono',
+        };
+        setStatus(msgs[e.error] || `Error: ${e.error}`);
+      };
+    }
+
+    micBtn.addEventListener('click', () => {
+      if (!recognition) return;
+      if (isListening) {
+        recognition.stop();
+      } else if (!isLoading) {
+        // Si hay síntesis en curso, pararla antes de escuchar
+        if (isSpeaking) synth.cancel();
+        recognition.start();
+      }
+    });
+
+    /* ══════════════════════════════════════════
+       ENVIAR MENSAJE
+    ══════════════════════════════════════════ */
+    async function sendMessage(text) {
+      if (!text || isLoading) return;
+      isLoading = true;
+      sendBtn.disabled = true;
+      userInput.value = '';
+
+      // Agregar mensaje del usuario al historial visual
+      appendMsg('user', text);
+
+      // Agregar al historial de conversación
+      conversationHistory.push({ role: 'user', text });
+
+      // Mostrar cargando en burbuja
+      bearBubble.classList.remove('empty');
+      bearBubble.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span>';
+      setStatus('💭 Pelucho está pensando...');
+
+      try {
+        const response = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: text,
+            history: conversationHistory.slice(-10) // últimos 10 turnos
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.reply) {
+          // Mostrar respuesta
+          bearBubble.textContent = data.reply;
+          bearBubble.classList.remove('empty');
+          appendMsg('bear', data.reply);
+
+          // Agregar al historial
+          conversationHistory.push({ role: 'model', text: data.reply });
+
+          // Hablar la respuesta
+          speak(data.reply);
+          setStatus('🌟 Pelucho habló — toca el micrófono para responder');
+        } else {
+          throw new Error(data.error || 'Sin respuesta');
+        }
+
+      } catch (err) {
+        const errMsg = '¡Ups, tuve un problemita! ¿Lo intentamos de nuevo? 🧸💕';
+        bearBubble.textContent = errMsg;
+        speak(errMsg);
+        setStatus('⚠️ Error de conexión');
+        console.error('Error:', err);
+      } finally {
+        isLoading = false;
+        sendBtn.disabled = false;
+      }
+    }
+
+    /* ══════════════════════════════════════════
+       HISTORIAL VISUAL
+    ══════════════════════════════════════════ */
+    function appendMsg(role, text) {
+      const div = document.createElement('div');
+      div.className = `msg ${role}`;
+      div.textContent = (role === 'bear' ? '🧸 ' : '🗨️ ') + text;
+      chatHistory.appendChild(div);
+      chatHistory.scrollTop = chatHistory.scrollHeight;
+
+      // Limitar historial visual a 30 mensajes
+      while (chatHistory.children.length > 30) {
+        chatHistory.removeChild(chatHistory.firstChild);
+      }
+    }
+
+    /* ══════════════════════════════════════════
+       EVENTOS TECLADO / BOTÓN ENVIAR
+    ══════════════════════════════════════════ */
+    sendBtn.addEventListener('click', () => {
+      const text = userInput.value.trim();
+      if (text) sendMessage(text);
+    });
+
+    userInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        const text = userInput.value.trim();
+        if (text) sendMessage(text);
+      }
+    });
+
+    /* ══════════════════════════════════════════
+       UTILIDADES
+    ══════════════════════════════════════════ */
+    function setStatus(msg) {
+      statusBar.textContent = msg;
+    }
+
+    // Saludo inicial con voz después de 1.5s
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        speak('¡Hola! Soy Pelucho, tu amigo peluche. ¿En qué te puedo ayudar hoy, amiguito?');
+        setStatus('🌟 ¡Pelucho dice hola! Toca el micrófono para hablar');
+      }, 1500);
+    });
+
+  })();
+  </script>
+</body>
+</html>
